@@ -1,0 +1,95 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# a newer push cancels the in-flight run for the same ref
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # pinned so CI does not drift when new linter versions land; bump deliberately
+  RUFF_VERSION: "0.17.3"
+  MYPY_VERSION: "2.4.0"
+
+jobs:
+  lint:
+    name: Lint + types (python)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: ruff check
+        run: uvx ruff@${{ env.RUFF_VERSION }} check services/
+
+      - name: ruff format (check only)
+        run: uvx ruff@${{ env.RUFF_VERSION }} format --check services/
+
+      - name: mypy (orchestrator)
+        working-directory: services/orchestrator
+        run: uv run --with mypy==${{ env.MYPY_VERSION }} mypy app
+
+  test:
+    name: Tests (${{ matrix.service }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        service: [checkout-api, inventory-api, fulfillment-worker, orchestrator]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Install deps
+        working-directory: services/${{ matrix.service }}
+        run: uv sync --frozen
+
+      - name: pytest
+        working-directory: services/${{ matrix.service }}
+        run: uv run pytest -q
+
+  frontend:
+    name: Frontend (lint + typecheck + build)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install deps
+        working-directory: frontend
+        run: npm ci
+
+      - name: eslint
+        working-directory: frontend
+        run: npm run lint
+
+      - name: tsc --noEmit
+        working-directory: frontend
+        run: npm run typecheck
+
+      - name: next build
+        working-directory: frontend
+        run: npm run build
