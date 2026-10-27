@@ -14,7 +14,7 @@ Written so someone can decide in five minutes whether to run the demo.*
   --build -d` boot, including a real latency cascade, queue saturation, and a
   dead-lettered message — [`SETUP.md` §10](SETUP.md#10-verification-record).
 - **Live demo:** _add URL after Phase 5_ · **Demo clip:** _add link_
-- **Repo:** _add URL_
+- **Repo:** https://github.com/ryan-gabriel/FailoverForge
 
 ---
 

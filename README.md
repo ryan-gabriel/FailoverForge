@@ -1,5 +1,8 @@
 # Failover Forge
 
+[![CI](https://github.com/ryan-gabriel/FailoverForge/actions/workflows/ci.yml/badge.svg)](https://github.com/ryan-gabriel/FailoverForge/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 **A chaos-engineering training ground: break a real 3-service system on purpose and watch the blast radius propagate live.**
 
 Failover Forge is a small but *real* order/checkout system you can sabotage from a control panel. Inject latency, errors, a crashed container, queue saturation, or a cache outage — then watch p95 climb, errors cascade across service boundaries, the queue back up, and the cache hit rate collapse. Every failure is recorded as an append-only event, so a **replayable incident timeline** and a generated **post-incident report** (root cause, blast radius, MTTR) fall out of the same data.
