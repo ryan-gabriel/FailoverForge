@@ -1,0 +1,13 @@
+* text=auto eol=lf
+
+*.sh text eol=lf
+Dockerfile text eol=lf
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+
+*.lock text eol=lf

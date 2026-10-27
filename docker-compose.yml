@@ -1,0 +1,136 @@
+name: failover-forge
+
+x-python-healthcheck: &python-healthcheck
+  # python:3.12-slim ships neither curl nor wget; use the interpreter itself.
+  # 127.0.0.1 avoids IPv6-first `localhost` resolution surprises.
+  test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0) if urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3).status == 200 else sys.exit(1)"]
+  interval: 10s
+  timeout: 5s
+  retries: 6
+  start_period: 20s
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-forge}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-forge}
+      POSTGRES_DB: ${POSTGRES_DB:-forge}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-forge} -d $${POSTGRES_DB:-forge}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    # guest is restricted to loopback by RabbitMQ; container-to-container traffic
+    # is not loopback, so we create a dedicated non-loopback user from .env creds.
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-forge}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-forge}
+    ports:
+      - "15672:15672"
+    healthcheck:
+      # ping alone can pass before the AMQP listener accepts sockets on a cold
+      # boot, so actively connect to the listeners (5672 AMQP + 15672 mgmt).
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "check_port_connectivity"]
+      interval: 5s
+      timeout: 10s
+      retries: 12
+
+  inventory-api:
+    build: ./services/inventory-api
+    env_file: .env
+    ports:
+      - "8002:8000"
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck: *python-healthcheck
+    restart: on-failure
+
+  checkout-api:
+    build: ./services/checkout-api
+    env_file: .env
+    ports:
+      - "8001:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      inventory-api:
+        condition: service_healthy
+    healthcheck: *python-healthcheck
+    restart: on-failure
+
+  fulfillment-worker:
+    build: ./services/fulfillment-worker
+    env_file: .env
+    ports:
+      - "8003:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    healthcheck: *python-healthcheck
+    restart: on-failure
+
+  orchestrator:
+    build: ./services/orchestrator
+    env_file: .env
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      checkout-api:
+        condition: service_healthy
+      inventory-api:
+        condition: service_healthy
+      fulfillment-worker:
+        condition: service_healthy
+    healthcheck: *python-healthcheck
+    restart: on-failure
+
+  frontend:
+    build: ./frontend
+    env_file: .env
+    ports:
+      - "3000:3000"
+    depends_on:
+      orchestrator:
+        condition: service_healthy
+    healthcheck:
+      # node:22-alpine has wget; use 127.0.0.1 — the dev server binds IPv4 only
+      # while the container's `localhost` resolves to ::1 first.
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:3000/"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
+    restart: on-failure
+
+volumes:
+  pgdata:
