@@ -9,6 +9,7 @@ import aio_pika
 import asyncpg
 import httpx
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from redis import asyncio as aioredis
 
 from app.aggregator import Aggregator
@@ -139,6 +140,17 @@ async def _connect_mq_with_retry(
 
 
 app = FastAPI(title="orchestrator", lifespan=lifespan)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.include_router(injection.router)
 app.include_router(load.router)
