@@ -86,27 +86,29 @@ export default function DashboardPage() {
   const nodeStates = tick?.node_states ?? {};
 
   return (
-    <main className="mx-auto max-w-7xl px-6 py-8">
+    <main className="mx-auto max-w-7xl px-6 py-8 glass-fade-in">
       <header className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Failover Forge</h1>
+          <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-orange-300 to-amber-100 bg-clip-text text-transparent">
+            Failover Forge
+          </h1>
           <p className="mt-1 text-sm text-slate-400">
             Chaos engineering training ground: break a real system, watch the blast radius.
           </p>
         </div>
         <div className="flex items-center gap-3 text-xs">
           {incident && (
-            <span className="rounded-full border border-red-700 bg-red-950/60 px-3 py-1 font-mono text-red-300">
+            <span className="glass-pill px-3 py-1 font-mono text-red-300 border-red-500/40 glass-pulse">
               incident {incident.incident_id.slice(0, 8)} · open
             </span>
           )}
           <Link
             href="/incidents"
-            className="rounded-full border border-slate-700 px-3 py-1 text-slate-400 transition-colors hover:border-slate-500 hover:text-slate-200"
+            className="glass-pill px-3 py-1 text-slate-300 transition-colors hover:text-white glass-interactive"
           >
             Incidents →
           </Link>
-          <span className="flex items-center gap-2 rounded-full border border-slate-700 px-3 py-1 text-slate-400">
+          <span className="glass-pill flex items-center gap-2 px-3 py-1 text-slate-300">
             <span
               className={`h-2 w-2 rounded-full ${connected ? "bg-emerald-400" : "animate-pulse bg-amber-400"}`}
             />
@@ -116,7 +118,7 @@ export default function DashboardPage() {
       </header>
 
       {topology === null ? (
-        <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-10 text-center text-sm text-slate-500">
+        <div className="glass p-10 text-center text-sm text-slate-400">
           Waiting for orchestrator topology…
         </div>
       ) : (
@@ -131,7 +133,7 @@ export default function DashboardPage() {
               {SERVICE_ORDER.map((service) => {
                 const m = tick?.services[service];
                 return (
-                  <div key={service} className="rounded-xl border border-slate-800 bg-slate-900/60 p-3">
+                  <div key={service} className="glass p-3 glass-interactive">
                     <div className="truncate font-mono text-[11px] text-slate-500">{service}</div>
                     <div className="mt-1 font-mono text-lg text-slate-100">
                       {m ? m.rps.toFixed(1) : "–"}
@@ -148,7 +150,7 @@ export default function DashboardPage() {
                   </div>
                 );
               })}
-              <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-3">
+              <div className="glass p-3 glass-interactive">
                 <div className="font-mono text-[11px] text-slate-500">rabbitmq</div>
                 <div className="mt-1 font-mono text-lg text-slate-100">
                   {tick?.queue.depth ?? "–"}
@@ -174,7 +176,7 @@ export default function DashboardPage() {
               onClearAll={onClearAll}
             />
             {actionError && (
-              <div className="rounded-xl border border-red-900 bg-red-950/40 p-3 font-mono text-xs text-red-300">
+              <div className="glass p-3 font-mono text-xs text-red-300 border-red-500/40 glass-pulse">
                 {actionError}
               </div>
             )}

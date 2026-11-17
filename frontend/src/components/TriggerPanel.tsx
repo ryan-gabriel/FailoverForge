@@ -53,7 +53,7 @@ export default function TriggerPanel({ active, busy, onInject, onClear, onClearA
   };
 
   return (
-    <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+    <div className="glass p-4">
       <div className="mb-3 flex items-center justify-between">
         <h3 className="text-sm font-medium text-slate-300">Trigger failures</h3>
         <button

@@ -61,7 +61,7 @@ export default function IncidentsPage() {
 
       <div className="space-y-2">
         {incidents.length === 0 && !error && (
-          <div className="rounded-xl border border-slate-800 bg-slate-900/60 px-4 py-8 text-center text-sm text-slate-600">
+          <div className="glass px-4 py-8 text-center text-sm text-slate-400">
             No incidents yet. Trigger a failure from the dashboard to open one.
           </div>
         )}
@@ -69,7 +69,7 @@ export default function IncidentsPage() {
           <Link
             key={incident.incident_id}
             href={`/incidents/${incident.incident_id}`}
-            className="flex items-center gap-4 rounded-xl border border-slate-800 bg-slate-900/60 px-4 py-3 transition-colors hover:border-slate-700"
+            className="glass flex items-center gap-4 px-4 py-3 transition-colors glass-interactive"
           >
             <span
               className={`rounded-full border px-2 py-0.5 font-mono text-[11px] ${STATUS_STYLES[incident.status] ?? "border-slate-700 text-slate-400"}`}

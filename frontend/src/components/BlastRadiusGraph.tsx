@@ -73,7 +73,7 @@ export default function BlastRadiusGraph({
   injectedServices: string[];
 }) {
   return (
-    <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+    <div className="glass p-4">
       <div className="mb-2 flex items-baseline justify-between">
         <h3 className="text-sm font-medium text-slate-300">Blast radius</h3>
         <span className="text-xs text-slate-500">live</span>

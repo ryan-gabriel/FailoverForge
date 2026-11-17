@@ -32,7 +32,7 @@ export default function QueuePanel() {
   }, []);
 
   return (
-    <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+    <div className="glass p-4">
       <h3 className="mb-2 text-sm font-medium text-slate-300">Queue &amp; DLQ</h3>
       {error && <div className="mb-2 font-mono text-[11px] text-amber-400">{error}</div>}
       <div className="grid grid-cols-3 gap-2 text-center">
