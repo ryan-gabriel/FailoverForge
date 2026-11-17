@@ -15,3 +15,5 @@ dist/
 *.tsbuildinfo
 coverage/
 frontend/out/
+
+.opencode/
